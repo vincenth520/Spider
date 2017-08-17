@@ -8,6 +8,7 @@ import http.cookiejar
 import json
 import random
 import time
+import configparser
 
 '''
 构建公共请求头
@@ -24,9 +25,12 @@ def build_opener():
 
 
 def login(code=0):
-	username = '1091986039@qq.com'
-	password = 'hsj19951125...'
-	url = 'https://www.zhihu.com/#signin'
+	login_data = configparser.ConfigParser()
+	login_data.read("user.ini") #将用户名密码放在user.ini配置文件
+
+	username = login_data.get("LoginInfo", "email")
+	password = login_data.get("LoginInfo", "password")
+	url = 'https://www.zhihu.com/signin'
 	login_url = 'https://www.zhihu.com/login/email'
 	captcha_url = 'https://www.zhihu.com/captcha.gif'
 	req = request.Request(url)
@@ -46,7 +50,7 @@ def login(code=0):
 		'_xsrf': _xsrf
 	}
 
-
+	#如果code是1,说明需要验证码，读取验证码并写入到本地,然后手动输入验证码
 	if code == 1:
 		cap_parms = parse.urlencode({"r": time.time(), "type": "login"}).encode('utf-8')
 		captcha_req = request.Request(captcha_url,cap_parms,method="GET")
@@ -64,6 +68,7 @@ def login(code=0):
 	
 	result = res.read().decode('utf-8')
 	login_result = json.loads(result)
+
 
 	if login_result['r'] == 0:
 		print('登陆成功')
