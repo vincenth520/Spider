@@ -29,7 +29,7 @@ def login():
 	url = 'https://www.v2ex.com/signin'
 	req = request.Request(url)
 	res = request.urlopen(req)
-	html = res.read().decode('gbk','ignore')
+	html = res.read().decode('gbk','ignore')  #获取到登录页的源代码并分析
 	soup = BeautifulSoup(html, 'html.parser', from_encoding='utf-8')
 	inputs = soup.find_all('input')
 
@@ -42,31 +42,35 @@ def login():
 	}
 	params = parse.urlencode(params).encode('utf-8')
 
-	req = request.Request(url,params,method="POST")
+	req = request.Request(url,params,method="POST") #将构造好的登录参数发送到登录地址
 	res = request.urlopen(req)
 
 def daily():
-	url = 'https://www.v2ex.com/mission/daily'
+	url = 'https://www.v2ex.com/mission/daily' #领取奖励地址
 	req = request.Request(url)
 	res = request.urlopen(req)
 	html = res.read().decode("utf-8")
-	soup = BeautifulSoup(html, 'html.parser', from_encoding='utf-8')
+	soup = BeautifulSoup(html, 'html.parser', from_encoding='utf-8') #获取领取奖励页面的代码
 	inputs = soup.find_all('input')
 
-	daily_link = 'https://www.v2ex.com' + re.search("location.href = '(.*)';", inputs[1]['onclick']).group(1)
-	daily_link = 'https://www.v2ex.com/mission/daily/redeem?once=40488';
-	if daily_link == 'https://www.v2ex.com/balance':
-		print('您今天已经领取了！')
-		return False
+	try:
+		daily_link = 'https://www.v2ex.com' + re.search("location.href = '(.*)';", inputs[1]['onclick']).group(1) #查找点击领取的地址
+		if daily_link == 'https://www.v2ex.com/balance':
+			print('您今天已经领取了！')
+			return False
 
-	req = request.Request(daily_link)
-	res = request.urlopen(req)
+		req = request.Request(daily_link)
+		res = request.urlopen(req)
 
-	html = res.read().decode("utf-8")
+		html = res.read().decode("utf-8")
 
-	soup = BeautifulSoup(html, 'html.parser', from_encoding='utf-8')
+		soup = BeautifulSoup(html, 'html.parser', from_encoding='utf-8')
+		
+		print(soup.find('div',class_="message").text)
+	except Exception as e:
+		print('账号密码错误')
 	
-	print(soup.find('div',class_="message").text)
+	
 
 
 
